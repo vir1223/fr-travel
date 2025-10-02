@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fr_travel/page/setting_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomePage extends StatefulWidget {
@@ -40,12 +41,14 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     ),
-                    IconButton(onPressed: (){}, icon: Icon(
-                      Icons.notifications,
-                      size: 55,
-                      color: Color.fromARGB(255, 0, 191, 99),
-                    ),)
-                    
+                    IconButton(
+                      onPressed: () {},
+                      icon: Icon(
+                        Icons.notifications,
+                        size: 55,
+                        color: Color.fromARGB(255, 0, 191, 99),
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(height: 75),
@@ -55,7 +58,7 @@ class _HomePageState extends State<HomePage> {
                     TextButton(
                       onPressed: () {},
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.black
+                        foregroundColor: Colors.black,
                       ),
                       child: Column(
                         children: [
@@ -84,7 +87,7 @@ class _HomePageState extends State<HomePage> {
                     TextButton(
                       onPressed: () {},
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.black
+                        foregroundColor: Colors.black,
                       ),
                       child: Column(
                         children: [
@@ -113,7 +116,7 @@ class _HomePageState extends State<HomePage> {
                     TextButton(
                       onPressed: () {},
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.black
+                        foregroundColor: Colors.black,
                       ),
                       child: Column(
                         children: [
@@ -136,13 +139,13 @@ class _HomePageState extends State<HomePage> {
                               fontSize: 15,
                             ),
                           ),
-                        ],  
+                        ],
                       ),
                     ),
                     TextButton(
                       onPressed: () {},
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.black
+                        foregroundColor: Colors.black,
                       ),
                       child: Column(
                         children: [
@@ -236,73 +239,68 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   SizedBox(height: 22),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      color: Color.fromARGB(255, 0, 191, 99),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 0, 191, 99),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.settings,
-                                size: 31,
-                                color: Colors.white,
-                              ),
-                              Text('Setting'),
-                            ],
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 0, 191, 99),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.home_outlined,
-                                size: 31,
-                                color: Colors.white,
-                              ),
-                              Text('Home'),
-                            ],
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 0, 191, 99),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.person_outline_outlined,
-                                size: 31,
-                                color: Colors.white,
-                              ),
-                              Text('Profile'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        height: 60,
+        decoration: BoxDecoration(color: Color.fromARGB(255, 0, 191, 99)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingPage()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromARGB(255, 0, 191, 99),
+                foregroundColor: Colors.white,
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.settings, size: 31, color: Colors.white),
+                  Text('Setting'),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromARGB(100, 0, 191, 99),
+                foregroundColor: Colors.white,
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.home_outlined, size: 31, color: Colors.white),
+                  Text('Home'),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromARGB(255, 0, 191, 99),
+                foregroundColor: Colors.white,
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.person_outline_outlined,
+                    size: 31,
+                    color: Colors.white,
+                  ),
+                  Text('Profile'),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
