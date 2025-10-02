@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fr_travel/page/home_page.dart';
+import 'package:fr_travel/page/profile_page.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -147,7 +148,12 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfilePage()),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromARGB(255, 0, 191, 99),
                 foregroundColor: Colors.white,

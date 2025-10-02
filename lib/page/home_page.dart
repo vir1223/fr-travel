@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:fr_travel/page/profile_page.dart';
 import 'package:fr_travel/page/setting_page.dart';
+import 'package:fr_travel/page/umroh_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomePage extends StatefulWidget {
@@ -56,7 +58,12 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => UmrohPage()),
+                );
+                      },
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.black,
                       ),
@@ -283,7 +290,12 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfilePage()),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromARGB(255, 0, 191, 99),
                 foregroundColor: Colors.white,
