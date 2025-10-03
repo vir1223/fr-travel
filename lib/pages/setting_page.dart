@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fr_travel/page/home_page.dart';
-import 'package:fr_travel/page/profile_page.dart';
+import 'package:fr_travel/pages/home_page.dart';
+import 'package:fr_travel/pages/profile_page.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});

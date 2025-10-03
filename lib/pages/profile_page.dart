@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fr_travel/page/home_page.dart';
-import 'package:fr_travel/page/setting_page.dart';
+import 'package:fr_travel/pages/home_page.dart';
+import 'package:fr_travel/pages/setting_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ProfilePage extends StatefulWidget {

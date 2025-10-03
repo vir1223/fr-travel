@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:fr_travel/page/profile_page.dart';
-import 'package:fr_travel/page/setting_page.dart';
-import 'package:fr_travel/page/umroh_page.dart';
+import 'package:fr_travel/pages/profile_page.dart';
+import 'package:fr_travel/pages/setting_page.dart';
+import 'package:fr_travel/pages/tripku_page.dart';
+import 'package:fr_travel/pages/umroh_haji_page.dart';
+import 'package:fr_travel/pages/umroh_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomePage extends StatefulWidget {
@@ -59,10 +61,12 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     TextButton(
                       onPressed: () {
-                        Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => UmrohPage()),
-                );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UmrohHajiPage(),
+                          ),
+                        );
                       },
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.black,
@@ -121,7 +125,14 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TripkuPage(),
+                          ),
+                        );
+                      },
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.black,
                       ),
