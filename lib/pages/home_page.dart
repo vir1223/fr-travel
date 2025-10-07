@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:fr_travel/pages/live_location_page.dart';
+import 'package:fr_travel/pages/notification_page.dart';
 import 'package:fr_travel/pages/profile_page.dart';
 import 'package:fr_travel/pages/setting_page.dart';
 import 'package:fr_travel/pages/tripku_page.dart';
 import 'package:fr_travel/pages/umroh_haji_page.dart';
-import 'package:fr_travel/pages/umroh_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomePage extends StatefulWidget {
@@ -46,7 +47,11 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => NotificationPage(),
+                            ));
+                      },
                       icon: Icon(
                         Icons.notifications,
                         size: 55,
@@ -161,7 +166,11 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => LiveLocationPage(),
+                            ));
+                      },
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.black,
                       ),

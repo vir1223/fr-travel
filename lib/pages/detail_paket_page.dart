@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fr_travel/pages/chat_page.dart';
 import '../data/mock_data.dart';
 import '../models/paket_model.dart';
 import 'data_pribadi_page.dart'; // Navigasi ke Isi Data
@@ -70,7 +71,11 @@ class DetailPaketPage extends StatelessWidget {
                       // Tombol Chat
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {/* Navigasi ke ChatPage */},
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => ChatPage(),
+                            ));
+                            },
                           icon: const Icon(Icons.chat_bubble_outline, size: 18),
                           label: const Text('Chat dengan Agen'),
                           style: ElevatedButton.styleFrom(
