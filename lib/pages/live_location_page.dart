@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import '../data/mock_data.dart'; // Untuk kPrimaryColor
-
-// Jika Anda sudah install google_maps_flutter, ganti Container ini dengan GoogleMap
-// import 'package:google_maps_flutter/google_maps_flutter.dart'; 
+import 'package:flutter_map/flutter_map.dart'; // Import flutter_map
+import 'package:latlong2/latlong.dart'; // Import LatLng dari latlong2
+import '../data/mock_data.dart'; 
 
 class LiveLocationPage extends StatelessWidget {
   const LiveLocationPage({super.key});
+
+  // Koordinat Hardcode untuk lokasi saat ini (Contoh: Mekkah)
+  final LatLng _currentLocation = const LatLng(21.4225, 39.8262);
 
   @override
   Widget build(BuildContext context) {
@@ -15,43 +17,64 @@ class LiveLocationPage extends StatelessWidget {
         backgroundColor: kPrimaryColor,
         foregroundColor: Colors.white,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Placeholder untuk Peta
-            Container(
-              height: 400,
-              width: MediaQuery.of(context).size.width * 0.9,
+      body: Stack(
+        children: [
+          // Widget Flutter Map
+          FlutterMap(
+            options: MapOptions(
+              initialCenter: _currentLocation,
+              initialZoom: 14.0,
+            ),
+            children: [
+              // Tile Layer (Menampilkan Peta OSM)
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.yourcompany.yourappname', // Ganti dengan package name Anda
+              ),
+              
+              // Marker Layer (Menampilkan Pin Lokasi)
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: _currentLocation,
+                    width: 80,
+                    height: 80,
+                    child: Icon(
+                      Icons.location_on,
+                      color: kPrimaryColor, // Warna Pin
+                      size: 40.0,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // Teks Lokasi di bagian bawah
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(15),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 5,
+                  ),
+                ],
               ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.map, size: 50, color: Colors.black54),
-                    SizedBox(height: 10),
-                    Text(
-                      "Placeholder Peta",
-                      style: TextStyle(color: Colors.black54),
-                    ),
-                    Text(
-                      "Tambahkan 'google_maps_flutter' untuk peta nyata",
-                      style: TextStyle(fontSize: 12, color: Colors.black54),
-                    ),
-                  ],
-                ),
+              child: const Text(
+                "Lokasi saat ini: Mekkah, Arab Saudi (Via OpenStreetMap)",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: kPrimaryColor),
               ),
             ),
-            const SizedBox(height: 20),
-            Text(
-              "Lokasi saat ini: Mekkah, KSA", // Data Hardcode
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: kPrimaryColor),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
