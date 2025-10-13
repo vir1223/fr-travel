@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fr_travel/pages/doa_page.dart';
 import 'package:fr_travel/pages/live_location_page.dart';
 import 'package:fr_travel/pages/notification_page.dart';
 import 'package:fr_travel/pages/profile_page.dart';
@@ -165,7 +166,14 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-                    TextButton(
+                    
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                  TextButton(
                       onPressed: () {
                         Navigator.push(context, MaterialPageRoute(
                               builder: (context) => LiveLocationPage(),
@@ -198,12 +206,44 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-                  ],
-                ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => DoaPage(),
+                            ));
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.black,
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 67,
+                            height: 67,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              color: Color.fromARGB(255, 0, 191, 99),
+                            ),
+                            child: Image(
+                              image: AssetImage('../../assets/icons/pray.png'),
+                            ),
+                          ),
+                          SizedBox(height: 3),
+                          Text(
+                            'Doa',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],)
               ],
             ),
           ),
-          SizedBox(height: 30),
+          SizedBox(height: 15),
           Expanded(
             child: Container(
               width: double.infinity,
