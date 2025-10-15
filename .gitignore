@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# API Keys and Secrets
+**/android/app/google-services.json
+**/lib/firebase_options.dart
+**/android/app/src/main/res/values/strings.xml
+.env
+.env.local
+.env.production
+.env.staging
