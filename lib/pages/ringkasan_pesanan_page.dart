@@ -142,7 +142,7 @@ class RingkasanPesananPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: kPrimaryColor.withOpacity(0.5)),
+        border: Border.all(color: kPrimaryColor.withValues(alpha: 50)),
       ),
       child: Row(
         children: [

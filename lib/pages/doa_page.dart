@@ -17,9 +17,9 @@ class DoaPage extends StatelessWidget {
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16.0),
-        itemCount: listDoaUmroh.length,
+        itemCount: listDoaHajiUmroh.length,
         itemBuilder: (context, index) {
-          final doa = listDoaUmroh[index];
+          final doa = listDoaHajiUmroh[index];
           return DoaCard(doa: doa);
         },
       ),

@@ -95,11 +95,11 @@ class DetailPaketPage extends StatelessWidget {
                               builder: (context) => DataPribadiPage(paket: paket),
                             ));
                           },
-                          child: const Text('Daftar Umroh', style: TextStyle(color: Colors.white)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: kPrimaryColor,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                           ),
+                          child: const Text('Daftar Umroh', style: TextStyle(color: Colors.white)),
                         ),
                       ),
                     ],
