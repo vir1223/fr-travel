@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fr_travel/pages/doa_page.dart';
 import 'package:fr_travel/pages/live_location_page.dart';
+import 'package:fr_travel/pages/news_page.dart';
 import 'package:fr_travel/pages/notification_page.dart';
 import 'package:fr_travel/pages/profile_page.dart';
 import 'package:fr_travel/pages/setting_page.dart';
@@ -286,7 +287,12 @@ class _HomePageState extends State<HomePage> {
                   ),
                   Spacer(),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+      context, 
+      MaterialPageRoute(builder: (context) => const NewsPage())
+    );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color.fromARGB(255, 0, 191, 99),
                       foregroundColor: Colors.white,
