@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
-import 'package:fr_travel/pages/home_page.dart';
-import 'package:fr_travel/pages/setting_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+// Import Services & Models untuk Firestore
+import '../services/firestore_service.dart';
+import '../models/user_profile_model.dart';
+
+// Import Pages (asumsi Anda memiliki HomePage dan SettingPage)
+import 'home_page.dart'; 
+import 'setting_page.dart'; 
 
 // Warna Primer Anda
 const Color primaryColor = Color.fromARGB(255, 0, 191, 99);
 
-const String defaultFirstName = 'Nama';
-const String defaultLastName = 'Pengguna';
-const String defaultPhone = '081234567890';
+// Data Default (Digunakan jika data Firestore belum ada)
 const String defaultGender = 'Pria';
-const String defaultBirthDate = '2000-01-01';
-
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -22,8 +24,14 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // 1. Dapatkan pengguna yang sedang login
+  // Instance Service & Auth
   final User? currentUser = FirebaseAuth.instance.currentUser;
+  final FirestoreService _firestoreService = FirestoreService();
+  
+  // State dan Keys
+  final _formKey = GlobalKey<FormState>();
+  UserProfile? _loadedProfile;
+  bool _isLoading = true; 
 
   // Controllers
   final TextEditingController firstController = TextEditingController();
@@ -35,41 +43,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   String? _dropdownValue = defaultGender;
   
-  // Variabel untuk menyimpan Photo URL (opsional, jika Anda punya)
-  String _photoUrl = ''; 
-  
 
   @override
   void initState() {
     super.initState();
-    _loadProfileData();
-  }
-
-  void _loadProfileData() {
     if (currentUser != null) {
-      // 2. Mengisi Controller dengan data dari Firebase Auth:
-      
-      // Menggunakan displayName Firebase (jika ada) atau email sebagai fallback
-      String fullName = currentUser!.displayName ?? currentUser!.email!.split('@')[0];
-      
-      // Karena Firebase tidak memisahkan nama depan/belakang, kita hardcode sisa data
-      firstController.text = defaultFirstName; 
-      lastController.text = defaultLastName;
-      
-      // Mengisi Email dan Username dari data login
-      emailController.text = currentUser!.email ?? 'Tidak Ada Email';
-      usernameController.text = fullName; 
-
-      // Data yang lain tetap menggunakan hardcode lokal
-      phoneController.text = defaultPhone;
-      birthDateController.text = defaultBirthDate; 
-      _dropdownValue = defaultGender;
-      _photoUrl = currentUser!.photoURL ?? '';
-      
-      // Jika Anda menyimpan data detail di Firestore, Anda akan memanggil fungsi fetch data di sini.
+      _loadProfileData();
     } else {
-      // Jika pengguna tidak login (sangat jarang jika Auth Wrapper berfungsi)
-      emailController.text = 'Pengguna Belum Login';
+      _isLoading = false; // Jika tidak ada pengguna yang login, hentikan loading
     }
   }
 
@@ -83,7 +64,91 @@ class _ProfilePageState extends State<ProfilePage> {
     birthDateController.dispose();
     super.dispose();
   }
+  
+  // --- LOGIKA FIRESTORE: LOAD DATA ---
+  Future<void> _loadProfileData() async {
+    if (currentUser == null) return;
+    
+    try {
+        final profile = await _firestoreService.getUserProfile(currentUser!.uid);
+        
+        // Jika data tidak ada di Firestore, buat objek default baru
+        final profileToUse = profile ?? UserProfile(
+          email: currentUser!.email ?? '',
+          photoUrl: currentUser!.photoURL ?? '',
+        );
 
+        // Jika ini pengguna baru, simpan data default ke Firestore
+        if (profile == null) {
+            await _firestoreService.saveUserProfile(currentUser!.uid, profileToUse);
+        }
+        
+        if (mounted) {
+            setState(() {
+              _loadedProfile = profileToUse;
+              _isLoading = false;
+
+              // Isi Controllers dengan data gabungan dari Auth dan Firestore
+              emailController.text = profileToUse.email;
+              firstController.text = profileToUse.firstName;
+              lastController.text = profileToUse.lastName;
+              phoneController.text = profileToUse.phone;
+              birthDateController.text = profileToUse.birthDate;
+              
+              // Username dari Firebase Auth displayName (prioritas)
+              usernameController.text = currentUser!.displayName ?? profileToUse.firstName; 
+              _dropdownValue = profileToUse.gender;
+            });
+        }
+    } catch (e) {
+        if (mounted) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Gagal memuat profil: $e'), backgroundColor: Colors.red)
+            );
+        }
+    }
+  }
+
+  // --- LOGIKA FIRESTORE: SAVE DATA ---
+  void _saveProfile() async {
+    if (currentUser == null || !_formKey.currentState!.validate()) return; // Validasi Form
+
+    // 1. Siapkan objek UserProfile baru dari Controllers
+    final newProfile = UserProfile(
+      email: emailController.text, // Email tidak berubah
+      photoUrl: currentUser!.photoURL ?? '',
+      firstName: firstController.text.trim(),
+      lastName: lastController.text.trim(),
+      phone: phoneController.text.trim(),
+      gender: _dropdownValue!,
+      birthDate: birthDateController.text.trim(),
+    );
+
+    try {
+      // 2. Simpan data detail ke Firestore
+      await _firestoreService.saveUserProfile(currentUser!.uid, newProfile);
+
+      // 3. Update display name di Firebase Auth (untuk username)
+      if (currentUser!.displayName != usernameController.text.trim()) {
+         await currentUser!.updateDisplayName(usernameController.text.trim());
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profil berhasil diperbarui dan disimpan di Firestore!'))
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menyimpan profil: $e'), backgroundColor: Colors.red)
+         );
+      }
+    }
+  }
+
+  // Helper untuk Dropdown
   void dropdownCallBack(String? selectedValue) {
     if (selectedValue is String) {
       setState(() {
@@ -92,11 +157,11 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  // Helper untuk Date Picker
   Future<void> _selectDate() async {
     DateTime? picked = await showDatePicker(
       context: context,
-      // Menggunakan initialDate dari controller jika valid, atau DateTime.now()
-      initialDate: DateTime.tryParse(birthDateController.text) ?? DateTime.now(), 
+      initialDate: DateTime.tryParse(birthDateController.text) ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime(2100),
     );
@@ -107,185 +172,159 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
   
-  void _saveProfile() {
-    // 3. (Opsional) Mengupdate Display Name di Firebase Auth
-    // Ini adalah satu-satunya data yang bisa diupdate TANPA Firestore/DB
-    if (currentUser != null && currentUser!.displayName != usernameController.text) {
-      currentUser!.updateDisplayName(usernameController.text);
-    }
-
-    // --- LOGIKA PENYIMPANAN DATA LAIN DI SINI ---
-    // Di aplikasi nyata, data ini (Nama Depan, Telepon, Gender, Tanggal Lahir) 
-    // akan disimpan ke Firestore atau Database lain menggunakan User UID
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profil berhasil diperbarui! (Data hanya email/username yang terintegrasi Firebase)'))
-    );
+  // Helper untuk Bottom Nav
+  Widget _buildNavButton(BuildContext context, IconData icon, String label, Widget? page, bool isActive) {
+      return Expanded(
+        child: ElevatedButton(
+          onPressed: isActive ? () {} : () {
+            if (page != null) {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (c) => page));
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isActive ? primaryColor.withOpacity(0.5) : primaryColor,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: const RoundedRectangleBorder(),
+            padding: EdgeInsets.zero
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 31, color: Colors.white),
+              Text(label, style: const TextStyle(fontSize: 10)),
+            ],
+          ),
+        ),
+      );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Tampilkan Loading Indicator saat data sedang diambil
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: primaryColor)),
+      );
+    }
+    
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Edit Profil', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.grey[200],
-              backgroundImage: _photoUrl.isNotEmpty ? NetworkImage(_photoUrl) : null,
-              child: _photoUrl.isEmpty ? const Icon(Icons.person_outline, size: 50, color: Colors.black) : null,
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Edit Profile',
-              style: GoogleFonts.inter(
-                fontSize: 25,
-                fontWeight: FontWeight.w500,
+        child: Form( // Membungkus UI dengan Form untuk validasi
+          key: _formKey,
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: Colors.grey[200],
+                // Menggunakan photoURL dari data yang dimuat
+                backgroundImage: _loadedProfile?.photoUrl != null && _loadedProfile!.photoUrl.isNotEmpty 
+                                ? NetworkImage(_loadedProfile!.photoUrl) as ImageProvider<Object>
+                                : null,
+                child: (_loadedProfile?.photoUrl == null || _loadedProfile!.photoUrl.isEmpty) 
+                      ? const Icon(Icons.person_outline, size: 50, color: Colors.black) 
+                      : null,
               ),
-            ),
-            const SizedBox(height: 22),
-            
-            // --- Form Fields ---
-            TextFormField(
-              controller: firstController,
-              decoration: const InputDecoration(labelText: 'First name', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 15),
-            TextFormField(
-              controller: lastController,
-              decoration: const InputDecoration(labelText: 'Last name', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 15),
-            TextFormField(
-              controller: usernameController,
-              decoration: const InputDecoration(labelText: 'Username', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 15),
-            
-            // Email (Biasanya dibuat read-only)
-            TextFormField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email (Dari Login)',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 20),
+              Text(
+                'Edit Profile',
+                style: GoogleFonts.inter(fontSize: 25, fontWeight: FontWeight.w500),
               ),
-              readOnly: true, // Email dari Firebase biasanya tidak bisa diubah langsung di sini
-            ),
-            const SizedBox(height: 15),
-            
-            TextFormField(
-              controller: phoneController,
-              decoration: const InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 15),
-            
-            // Gender Dropdown
-            DropdownButtonFormField<String>(
-              items: const [
-                DropdownMenuItem(value: "Pria", child: Text('Pria')),
-                DropdownMenuItem(value: "Wanita", child: Text('Wanita')),
-              ],
-              decoration: const InputDecoration(labelText: 'Gender', border: OutlineInputBorder()),
-              onChanged: dropdownCallBack,
-              value: _dropdownValue,
-            ),
-            const SizedBox(height: 15),
-            
-            // Tanggal Lahir
-            TextFormField(
-              controller: birthDateController,
-              decoration: const InputDecoration(
-                labelText: 'Tanggal Lahir',
-                filled: true,
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
-                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor)),
+              const SizedBox(height: 22),
+              
+              // --- Form Fields ---
+              TextFormField(
+                controller: firstController,
+                decoration: const InputDecoration(labelText: 'First name', border: OutlineInputBorder()),
+                validator: (value) => value!.isEmpty ? 'Nama depan wajib diisi' : null,
               ),
-              readOnly: true,
-              onTap: _selectDate,
-            ),
-            // --- End Form Fields ---
+              const SizedBox(height: 15),
+              TextFormField(
+                controller: lastController,
+                decoration: const InputDecoration(labelText: 'Last name', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 15),
+              TextFormField(
+                controller: usernameController,
+                decoration: const InputDecoration(labelText: 'Username', border: OutlineInputBorder()),
+                validator: (value) => value!.isEmpty ? 'Username wajib diisi' : null,
+              ),
+              const SizedBox(height: 15),
+              TextFormField(
+                controller: emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email (Dari Login)',
+                  border: OutlineInputBorder(),
+                  fillColor: Color(0xFFEFEFEF), filled: true, // Menandakan read-only
+                ),
+                readOnly: true,
+              ),
+              const SizedBox(height: 15),
+              TextFormField(
+                controller: phoneController,
+                decoration: const InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder()),
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 15),
+              DropdownButtonFormField<String>(
+                items: const [
+                  DropdownMenuItem(value: "Pria", child: Text('Pria')),
+                  DropdownMenuItem(value: "Wanita", child: Text('Wanita')),
+                ],
+                decoration: const InputDecoration(labelText: 'Gender', border: OutlineInputBorder()),
+                onChanged: dropdownCallBack,
+                value: _dropdownValue,
+              ),
+              const SizedBox(height: 15),
+              TextFormField(
+                controller: birthDateController,
+                decoration: const InputDecoration(
+                  labelText: 'Tanggal Lahir',
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+                readOnly: true,
+                onTap: _selectDate,
+              ),
+              // --- End Form Fields ---
 
-            const SizedBox(height: 30),
-            
-            // Tombol Selesai (Simpan)
-            ElevatedButton(
-              onPressed: _saveProfile, 
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              const SizedBox(height: 30),
+              
+              // Tombol Selesai (Simpan)
+              ElevatedButton(
+                onPressed: _saveProfile, 
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: Text(
+                  'Selesai',
+                  style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
               ),
-              child: Text(
-                'Selesai',
-                style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       
       // Bottom Navigation Bar
       bottomNavigationBar: Container(
         height: 60,
-        decoration: BoxDecoration(color: Color.fromARGB(255, 0, 191, 99)),
+        decoration: const BoxDecoration(color: primaryColor),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => SettingPage()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 0, 191, 99),
-                foregroundColor: Colors.white,
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.settings, size: 31, color: Colors.white),
-                  Text('Setting'),
-                ],
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 0, 191, 99),
-                foregroundColor: Colors.white,
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.home_outlined, size: 31, color: Colors.white),
-                  Text('Home'),
-                ],
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(100, 0, 191, 99),
-                foregroundColor: Colors.white,
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.person_outline_outlined,
-                    size: 31,
-                    color: Colors.white,
-                  ),
-                  Text('Profile'),
-                ],
-              ),
-            ),
+            _buildNavButton(context, Icons.settings, 'Setting', const SettingPage(), false),
+            _buildNavButton(context, Icons.home_outlined, 'Home', const HomePage(), false),
+            _buildNavButton(context, Icons.person_outline_outlined, 'Profile', null, true),
           ],
         ),
       ),
